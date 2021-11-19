@@ -10,11 +10,10 @@ import {
   Modal,
   Alert,
 } from "react-native";
-//import { Header } from "react-native-elements";
 import db from "../config";
-import firebase from "firebase";
+import * as firebase from "firebase";
 
-export default class App extends React.Component {
+export default class SignIn extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -88,7 +87,7 @@ export default class App extends React.Component {
         <TouchableOpacity
           style={styles.buttons}
           onPress={() => {
-            this.signUp();
+            //this.signUp();
           }}
         >
           <Text>Submit</Text>
@@ -117,13 +116,15 @@ export default class App extends React.Component {
               );
             if (response) {
               Alert.alert("User Succesfully Added");
-              db.collection("user").doc(this.state.email).set({
-                firstName: this.state.firstName,
-                lastName: this.state.lastName,
-                age: this.state.age,
-                email: this.state.email,
-                name:this.state.firstName+" "+this.state.lastName 
-              });
+              db.collection("user")
+                .doc(this.state.email)
+                .set({
+                  firstName: this.state.firstName,
+                  lastName: this.state.lastName,
+                  age: this.state.age,
+                  email: this.state.email,
+                  name: this.state.firstName + " " + this.state.lastName,
+                });
               this.login();
             }
           } catch (error) {
@@ -149,7 +150,7 @@ export default class App extends React.Component {
           .auth()
           .signInWithEmailAndPassword(this.state.email, this.state.passcode);
         if (response) {
-          this.props.navigation.navigate("profile");
+          this.props.navigation.navigate("DrawerNav");
         }
       } catch (error) {
         Alert.alert(error.message);
@@ -216,12 +217,11 @@ const styles = StyleSheet.create({
     width: 90,
     height: 30,
     backgroundColor: "red",
-    borderRadius:2,
+    borderRadius: 2,
     margin: 10,
     justifyContent: "center",
     alignItems: "center",
     alignSelf: "center",
-    
   },
   textInput: {
     width: "80%",
