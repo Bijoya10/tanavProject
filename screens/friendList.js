@@ -3,17 +3,13 @@ import {
   StyleSheet,
   Text,
   View,
-  Platform,
-  SafeAreaView,
-  StatusBar,
-  TextInput,
   FlatList,
   TouchableOpacity,
   Image,
 } from "react-native";
 import db from "../config";
 import firebase from "firebase";
-
+import MyHeader from "../components/header";
 
 export default class Friends extends React.Component {
   constructor(props) {
@@ -21,76 +17,96 @@ export default class Friends extends React.Component {
     this.state = {
       firstName: "",
       lastName: "",
-      docId: "",
+      docId: firebase.auth().currentUser.uid,
       allUsers: [],
-      allUsers2: [],
+      friendsId: [],
+      allUsersData: [],
       email: firebase.auth().currentUser.email,
       searchValue: "",
     };
   }
+  fetchFriendIds = () => {
+    this.state.allUsers.map((user) => {
+      if (user.friends[0] == this.state.docId) {
+        this.setState({
+          friendsId: [...this.state.friendsId, user.friends[1]],
+        });
+      } else {
+        this.setState({
+          friendsId: [...this.state.friendsId, user.friends[0]],
+        });
+      }
+    });
+    this.fetchFriendData();
+  };
+
+  fetchFriendData = () => {
+    this.state.friendsId.map(async (friend) => {
+      var friendRef = db.collection("user").where("uid", "==", friend);
+      friendRef.get().then((snapshot) => {
+        var userSnapshot = snapshot.docs.map((doc) => doc.data());
+        console.log(userSnapshot);
+        var temporary = [];
+        userSnapshot.map((user) => {
+          temporary.push(user);
+        });
+        this.setState({
+          allUsersData: [...this.state.allUsersData, ...temporary],
+        });
+      });
+    });
+  };
+
   fetchUser = async () => {
     db.collection("friendList")
-      .where("requesteeId", "==", this.state.email)
-      .onSnapshot((snapshot) => {
+      .where("friends", "array-contains", this.state.docId)
+      .get()
+      .then((snapshot) => {
         var userSnapshot = snapshot.docs.map((doc) => doc.data());
-
         var temporary = [];
         userSnapshot.map((user) => {
-          if (user.email == this.state.email) {
-          } else {
-            temporary.push(user);
-          }
+          temporary.push(user);
         });
-        this.setState({allUsers:[...this.state.allUsers, ...temporary]});
-      });
-
-      db.collection("friendList")
-      .where("requestorId", "==", this.state.email)
-      .onSnapshot((snapshot) => {
-        var userSnapshot = snapshot.docs.map((doc) => doc.data());
-
-        var temporary = [];
-        userSnapshot.map((user) => {
-          if (user.email == this.state.email) {
-          } else {
-            temporary.push(user);
-          }
-        });
-        this.setState({ allUsers:[...this.state.allUsers, ...temporary] });
+        this.setState({ allUsers: [...this.state.allUsers, ...temporary] });
+      })
+      .then(() => {
+        if (this.state.allUsers.length !== 0) this.fetchFriendIds();
       });
   };
-  
+
   renderItem = ({ item, index }) => {
     return (
       <View>
         <TouchableOpacity
           style={styles.flatlistButton}
           onPress={() => {
-            this.friendRequest(item.email);
+            this.props.navigation.navigate("chat",{"friend":item});
           }}
         >
           <View style={styles.flatlistCont}>
-            <Text style={styles.flatlistName}>{item.firstName}</Text>
-            <Text style={styles.flatlistName}>{item.lastName}</Text>
+            <Text style={styles.flatlistName}>{item.name}</Text>
+            <Text style={styles.flatlistName}>{item.email}</Text>
           </View>
-          <Text>User Id:{item.email}</Text>
         </TouchableOpacity>
       </View>
     );
   };
-  componentDidMount(){
-   this.fetchUser()
-  }
+  componentDidMount = async () => {
+    await this.fetchUser();
+  };
   render() {
-    return <View style={{ flex: 1 }}>
-      <FlatList
-          data={this.state.allUsers}
+    return (
+      <View style={{ flex: 1 }}>
+        <MyHeader />
+        <FlatList
+          data={this.state.allUsersData}
           keyExtractor={(item, index) => {
             return index.toString();
           }}
           renderItem={this.renderItem}
         />
-    </View>;
+      </View>
+    );
   }
 }
 const styles = StyleSheet.create({
@@ -101,18 +117,18 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderRadius: 20,
   },
-
-  /*containerLT: {
-      flex: 1,
-      margin: 2,
-      borderWidth: 2,
-      backgroundColor: "grey",
-      borderRadius: 20,
-      margin: 10,
-    },*/
-  droidSafeArea: {
-    marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+  flatlistButton: {
+    width: "100%",
+    backgroundColor: "beige",
+    margin: 10,
+    borderRadius: 5,
+    borderWidth: 1,
+    borderColor: "black",
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
   },
+
   text: { color: "black", fontSize: 30 },
   title: {
     fontFamily: "bubblegum-sans",
@@ -134,18 +150,7 @@ const styles = StyleSheet.create({
     textAlign: "center",
     alignSelf: "flex-end",
   },
-  fab: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    /*position:"absolute",
-      top:20,
-      right:50,
-      */
-    backgroundColor: "grey",
-    borderWidth: 1,
-    alignItems: "center",
-  },
+
   buttons: {
     width: 90,
     height: 30,

@@ -1,24 +1,24 @@
 import React from 'react';
 import {createDrawerNavigator} from "@react-navigation/drawer"
-import {NavigationContainer} from "@react-navigation/native"
 import AddFriend from "../screens/addFriend"
 import Requests from '../screens/requestScreens';
-import Friends from '../screens/friendList';
+import StackNav from './stackNav';
 import Profile from '../screens/profile';
-import LogOut from '../screens/logOut';
+import LogOut from '../screens/logout';
 const Drawer=createDrawerNavigator()
 
 export default class DrawerNav extends React.Component {
   render(){
   return (
-   <NavigationContainer>
-     <Drawer.Navigator>
+ 
+     <Drawer.Navigator screenOptions={{headerShown:false}}>
+       <Drawer.Screen name="Friends" component={StackNav}/>
        <Drawer.Screen name="Requests" component={Requests}/>
        <Drawer.Screen name="AddFriend" component={AddFriend}/>
        <Drawer.Screen name="Profile" component={Profile}/>
-       <Drawer.Screen name="Friends" component={Friends}/>
+       <Drawer.Screen name="LogOut" component={LogOut}/>
      </Drawer.Navigator>
-   </NavigationContainer>
+
   );
   }
 }

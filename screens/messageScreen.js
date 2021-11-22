@@ -20,6 +20,7 @@ export default class Profile extends React.Component {
       age: "",
       email: firebase.auth().currentUser.email,
       docId: "",
+      message: "",
     };
   }
   fetchUser = async () => {
@@ -44,56 +45,29 @@ export default class Profile extends React.Component {
     this.fetchUser();
   }
   render() {
+    console.log(this.props.route.params.friend)
     if (this.state.name !== "") {
       return (
-        <View style={{ flex: 1 }}>
-          <MyHeader />
-          <View style={styles.container}>
-            <View style={styles.inputContainer}>
-              <Text style={styles.text}>First Name:</Text>
-              <TextInput
-                style={styles.textInput}
-                placeholder="First Name"
-                value={this.state.firstName}
-                multiline={true}
-                onChangeText={(item) => {
-                  this.setState({ firstName: item });
-                }}
-              />
-            </View>
-            <View style={styles.inputContainer}>
-              <Text style={styles.text}>Last Name:</Text>
-              <TextInput
-                style={styles.textInput}
-                placeholder="Last Name"
-                value={this.state.lastName}
-                multiline={true}
-                onChangeText={(item) => {
-                  this.setState({ lastName: item });
-                }}
-              />
-            </View>
+        <View style={styles.container}>
+          <MyHeader text={this.props.route.params.friend.firstName}/>
+          <View style={styles.chat}>
 
-            <View style={styles.inputContainer}>
-              <Text style={styles.text}>Age:</Text>
-              <TextInput
-                style={styles.textInput}
-                placeholder="Age"
-                value={this.state.age}
-                multiline={true}
-                onChangeText={(item) => {
-                  this.setState({ age: item });
-                }}
-              />
-            </View>
-            <View style={styles.inputContainer}>
-              <Text style={styles.text}>Email:</Text>
-              <Text style={styles.textInput}>{this.state.email}</Text>
-            </View>
+          </View>
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.textInput}
+              placeholder="type message here"
+              value={this.state.message}
+              multiline={true}
+              onChangeText={(item) => {
+                this.setState({ message: item });
+              }}
+            />
+
             <TouchableOpacity
               style={styles.buttons}
               onPress={() => {
-                db.collection("user").doc(this.state.docId).update({
+                db.collection("chat").add({
                   firstName: this.state.firstName,
                   lastName: this.state.lastName,
                   age: this.state.age,
@@ -101,7 +75,7 @@ export default class Profile extends React.Component {
                 });
               }}
             >
-              <Text style={styles.buttonText}>Save</Text>
+              <Text style={styles.buttonText}>Send</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -117,11 +91,10 @@ export default class Profile extends React.Component {
 }
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    margin: 2,
-    borderWidth: 2,
-    borderRadius: 20,
-    padding: 15,
+    flex: 1,flexDirection:"column"
+  },
+  chat:{
+    flex:0.85
   },
   title: {
     fontFamily: "bubblegum-sans",
@@ -133,12 +106,12 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   textInput: {
-    width: "60%",
-    paddingVertical: 2,
+    width: "75%",
+    padding: 5,
     borderRadius: 10,
     borderColor: "blue",
     borderBottomWidth: 2,
-    fontSize: 30,
+    fontSize: 20,
     marginTop: 10,
     textAlign: "left",
     alignSelf: "flex-end",
@@ -156,7 +129,7 @@ const styles = StyleSheet.create({
   },
 
   buttons: {
-    backgroundColor: "red",
+    backgroundColor: "skyblue",
     marginTop: 30,
     borderRadius: 10,
     padding: 10,
@@ -168,7 +141,10 @@ const styles = StyleSheet.create({
     fontSize: 25,
   },
   inputContainer: {
+    flex:0.1,
+    justifyContent:"space-around",
     marginTop: 20,
     flexDirection: "row",
+    
   },
 });

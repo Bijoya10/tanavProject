@@ -3,18 +3,13 @@ import {
   StyleSheet,
   Text,
   View,
-  Platform,
-  SafeAreaView,
-  StatusBar,
   TextInput,
-  Image,
+  TouchableOpacity,
   FlatList,
 } from "react-native";
 import db from "../config";
 import firebase from "firebase";
-import { TouchableOpacity } from "react-native-gesture-handler";
-//import { RFValue } from "react-native-responsive-fontsize";
-//import * as Font from "expo-font";
+import MyHeader from "../components/header";
 
 export default class AddFriend extends React.Component {
   constructor(props) {
@@ -29,12 +24,12 @@ export default class AddFriend extends React.Component {
     };
   }
   fetchUser = async () => {
-    db.collection("user").onSnapshot((snapshot) => {
+    await db.collection("user").onSnapshot((snapshot) => {
       var userSnapshot = snapshot.docs.map((doc) => doc.data());
 
       var temporary = [];
       userSnapshot.map((user) => {
-        if (user.email == this.state.email) {
+        if (user.email.toLowerCase() == firebase.auth().currentUser.email) {
         } else {
           temporary.push(user);
         }
@@ -42,7 +37,7 @@ export default class AddFriend extends React.Component {
       this.setState({ allUsers: temporary });
     });
   };
-  fetchMyId = () => {
+  fetchMyId = async () => {
     db.collection("user")
       .where("email", "==", this.state.email)
       .get()
@@ -73,7 +68,7 @@ export default class AddFriend extends React.Component {
       <TouchableOpacity
         style={styles.flatlistButton}
         onPress={() => {
-          this.friendRequest(item.email);
+          this.friendRequest(item.uid);
         }}
       >
         <View style={styles.flatlistCont}>
@@ -92,58 +87,66 @@ export default class AddFriend extends React.Component {
   }
 
   render() {
-    return (
-      <View style={styles.container}>
-        <View style={{ flexDirection: "row" ,justifyContent:"space-around"}}>
-          <TextInput
-            placeholder="Search for people by the id"
-            style={styles.textInput}
-            onChangeText={(item) => {
-              this.setState({ searchValue: item });
-            }}
-          />
-          <TouchableOpacity
-            style={styles.buttons}
-            onPress={() => {
-              db.collection("user")
-                .where("docId", "==", this.state.searchValue)
-                .onSnapshot((snapshot) => {
-                  var userSnapshot = snapshot.docs.map((doc) => doc.data());
-
-                  var temporary = [];
-                  userSnapshot.map((user) => {
-                    if (user.email == this.state.email) {
-                    } else {
-                      temporary.push(user);
-                    }
-                  });
-                  this.setState({ allUsers: temporary });
-                });
-            }}
-          >
-            <Text>Search</Text>
-          </TouchableOpacity>
+    if (this.state.docId == "") {
+      return (
+        <View>
+          <MyHeader />
+          <Text>Loading....</Text>
         </View>
-        <FlatList
-          data={this.state.allUsers}
-          keyExtractor={(item, index) => {
-            return index.toString();
-          }}
-          renderItem={this.renderItem}
-        />
-      </View>
-    );
+      );
+    } else {
+      return (
+        <View style={styles.container}>
+          <MyHeader />
+          <View
+            style={{ flexDirection: "row", justifyContent: "space-around" }}
+          >
+            <TextInput
+              placeholder="Search for people by the id"
+              style={styles.textInput}
+              onChangeText={(item) => {
+                this.setState({ searchValue: item });
+              }}
+            />
+            <TouchableOpacity
+              style={styles.buttons}
+              onPress={() => {
+                db.collection("user")
+                  .where("docId", "==", this.state.searchValue)
+                  .onSnapshot((snapshot) => {
+                    var userSnapshot = snapshot.docs.map((doc) => doc.data());
+
+                    var temporary = [];
+                    userSnapshot.map((user) => {
+                      if (user.email == this.state.email) {
+                      } else {
+                        temporary.push(user);
+                      }
+                    });
+                    this.setState({ allUsers: temporary });
+                  });
+              }}
+            >
+              <Text>Search</Text>
+            </TouchableOpacity>
+          </View>
+          <FlatList
+            data={this.state.allUsers}
+            keyExtractor={(item, index) => {
+              return index.toString();
+            }}
+            renderItem={this.renderItem}
+          />
+        </View>
+      );
+    }
   }
 }
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    margin: 5,
-    padding: 5,
   },
-  droidSafeArea: {
-    marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
-  },
+  
   text: { color: "black", fontSize: 30 },
   title: {
     fontFamily: "bubblegum-sans",

@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   TextInput,
   ToastAndroid,
-  KeyboardAvoidingView,
   Modal,
   Alert,
+  SafeAreaView,Platform,StatusBar
 } from "react-native";
 import db from "../config";
 import * as firebase from "firebase";
@@ -68,8 +68,7 @@ export default class SignIn extends React.Component {
         <TextInput
           style={styles.textInput}
           placeholder="passcode"
-          multiline={true}
-          secureTextEntry={true}
+          secureTextEntry
           onChangeText={(item) => {
             this.setState({ passcode: item });
           }}
@@ -77,8 +76,7 @@ export default class SignIn extends React.Component {
         <TextInput
           style={styles.textInput}
           placeholder="Confirm passcode"
-          multiline={true}
-          secureTextEntry={true}
+          secureTextEntry
           onChangeText={(item) => {
             this.setState({ confirmPasscode: item });
           }}
@@ -87,7 +85,7 @@ export default class SignIn extends React.Component {
         <TouchableOpacity
           style={styles.buttons}
           onPress={() => {
-            //this.signUp();
+            this.signUp();
           }}
         >
           <Text>Submit</Text>
@@ -117,13 +115,14 @@ export default class SignIn extends React.Component {
             if (response) {
               Alert.alert("User Succesfully Added");
               db.collection("user")
-                .doc(this.state.email)
+                .doc(firebase.auth().currentUser.uid)
                 .set({
-                  firstName: this.state.firstName,
-                  lastName: this.state.lastName,
+                  firstName: this.state.firstName.toLowerCase(),
+                  lastName: this.state.lastName.toLowerCase(),
                   age: this.state.age,
-                  email: this.state.email,
-                  name: this.state.firstName + " " + this.state.lastName,
+                  email: this.state.email.toLowerCase(),
+                  name: this.state.firstName.toLowerCase() + " " + this.state.lastName.toLowerCase(),
+                  uid:firebase.auth().currentUser.uid
                 });
               this.login();
             }
@@ -150,6 +149,16 @@ export default class SignIn extends React.Component {
           .auth()
           .signInWithEmailAndPassword(this.state.email, this.state.passcode);
         if (response) {
+
+          this.setState({
+            email: "",
+            passcode: "",
+            showModal: false,
+            firstName: "",
+            lastName: "",
+            confirmPasscode: "",
+            age: "",
+          })
           this.props.navigation.navigate("DrawerNav");
         }
       } catch (error) {
@@ -170,6 +179,7 @@ export default class SignIn extends React.Component {
     if (this.state.showModal === false) {
       return (
         <View style={styles.container}>
+          <SafeAreaView style={styles.droidSafeArea}/>
           <TextInput
             style={styles.textInput}
             placeholder="Email"
@@ -185,7 +195,7 @@ export default class SignIn extends React.Component {
               this.setState({ passcode: data });
             }}
             value={this.state.passcode}
-            secureTextEntry={true}
+            secureTextEntry
           />
           <TouchableOpacity
             style={styles.buttons}
@@ -213,6 +223,9 @@ export default class SignIn extends React.Component {
 const styles = StyleSheet.create({
   container: { flex: 1, justifyContent: "center" },
   text: { color: "blue", fontSize: 20 },
+  droidSafeArea: {
+    marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+  },
   buttons: {
     width: 90,
     height: 30,

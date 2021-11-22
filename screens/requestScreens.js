@@ -3,16 +3,13 @@ import {
   StyleSheet,
   Text,
   View,
-  Platform,
-  SafeAreaView,
-  StatusBar,
-  TextInput,
-  Image,
+  TouchableOpacity,
   FlatList,
 } from "react-native";
 import db from "../config";
 import firebase from "firebase";
-import { TouchableOpacity } from "react-native-gesture-handler";
+
+import MyHeader from "../components/header";
 
 export default class Requests extends React.Component {
   constructor(props) {
@@ -20,7 +17,7 @@ export default class Requests extends React.Component {
     this.state = {
       firstName: "",
       lastName: "",
-      docId: "",
+      docId: firebase.auth().currentUser.uid,
       allUsers: [],
       email: firebase.auth().currentUser.email,
       searchValue: "",
@@ -28,21 +25,18 @@ export default class Requests extends React.Component {
   }
   fetchUser = async () => {
     db.collection("friendRequests")
-      .where("requesteeId", "==", this.state.email)
+      .where("requesteeId", "==", this.state.docId)
       .onSnapshot((snapshot) => {
+        var temporary = [];
         snapshot.docs.map((doc) => {
           var user = doc.data();
-
-          var temporary = [];
-          userSnapshot.map((user) => {
-            user["docId"] = doc.id;
-            temporary.push(user);
-          });
-          console.log(temporary);
-          this.setState({ allUsers: temporary });
+          user["docId"] = doc.id;
+          temporary.push(user);
         });
+        this.setState({ allUsers: temporary });
       });
   };
+
   fetchMyId = () => {
     db.collection("user")
       .where("email", "==", this.state.email)
@@ -70,10 +64,9 @@ export default class Requests extends React.Component {
             style={styles.buttons}
             onPress={() => {
               db.collection("friendList").add({
-                requestorId: item.requestorId,
-                requesteeId: item.requesteeId,
+                friends: [item.requestorId, item.requesteeId],
               });
-              db.collection("friendRequest").doc(item.docId).delete();
+              db.collection("friendRequests").doc(item.docId).delete();
             }}
           >
             <Text>ACCEPT</Text>
@@ -81,7 +74,7 @@ export default class Requests extends React.Component {
           <TouchableOpacity
             style={styles.buttons}
             onPress={() => {
-              db.collection("friendRequest").doc(item.docId).delete();
+              db.collection("friendRequests").doc(item.docId).delete();
             }}
           >
             <Text>Cancel</Text>
@@ -95,13 +88,14 @@ export default class Requests extends React.Component {
   componentDidMount() {
     //this.loadFontAsync();
     this.fetchMyId();
-   this.fetchUser();
+    this.fetchUser();
   }
 
   render() {
-    console.log(this.state.allUsers);
+    // console.log(this.state.allUsers);
     return (
       <View style={{ flex: 1 }}>
+        <MyHeader />
         <FlatList
           data={this.state.allUsers}
           keyExtractor={(item, index) => {
@@ -109,7 +103,6 @@ export default class Requests extends React.Component {
           }}
           renderItem={this.renderItem}
         />
-       
       </View>
     );
   }
@@ -120,9 +113,6 @@ const styles = StyleSheet.create({
     margin: 2,
     borderWidth: 2,
     borderRadius: 20,
-  },
-  droidSafeArea: {
-    marginTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
   },
   text: { color: "black", fontSize: 30 },
   title: {

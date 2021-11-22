@@ -4,12 +4,12 @@ require("@firebase/firestore");
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyCI6i1C51detmSZHOipJNR1y8wzlW6iwXY",
-  authDomain: "my-pro-f5df7.firebaseapp.com",
-  projectId: "my-pro-f5df7",
-  storageBucket: "my-pro-f5df7.appspot.com",
-  messagingSenderId: "398419220165",
-  appId: "1:398419220165:web:0569e7217bd51a3f3682ac",
+  apiKey: "AIzaSyA50okANUgnGmOSlbClt7Qd5trN-GIoG4A",
+  authDomain: "tanavproject.firebaseapp.com",
+  projectId: "tanavproject",
+  storageBucket: "tanavproject.appspot.com",
+  messagingSenderId: "293206800517",
+  appId: "1:293206800517:web:7e291c9018549471f591ec"
 };
 if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
