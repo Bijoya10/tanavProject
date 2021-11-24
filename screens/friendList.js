@@ -37,6 +37,7 @@ export default class Friends extends React.Component {
         });
       }
     });
+    console.log(this.state.friendsId)
     this.fetchFriendData();
   };
 
@@ -70,7 +71,7 @@ export default class Friends extends React.Component {
         this.setState({ allUsers: [...this.state.allUsers, ...temporary] });
       })
       .then(() => {
-        if (this.state.allUsers.length !== 0) this.fetchFriendIds();
+        if (this.state.allUsers.length !== 0){ this.fetchFriendIds()}
       });
   };
 

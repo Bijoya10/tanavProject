@@ -68,10 +68,7 @@ export default class Profile extends React.Component {
               style={styles.buttons}
               onPress={() => {
                 db.collection("chat").add({
-                  firstName: this.state.firstName,
-                  lastName: this.state.lastName,
-                  age: this.state.age,
-                  docId: this.state.docId,
+                 
                 });
               }}
             >
